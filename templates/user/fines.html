@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}My Fines{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h2 class="mb-1">My Fines</h2>
+        <p class="text-muted">View and pay your library fines</p>
+    </div>
+
+    <!-- Total Fines Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-danger text-white shadow-sm">
+                <div class="card-body">
+                    <h6>Total Outstanding</h6>
+                    <h3>₹{{ total_fines }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h6>Total Paid</h6>
+                    <h3>₹{{ paid_fines }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <h6>All Time Fines</h6>
+                    <h3>₹{{ all_time_fines }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outstanding Fines -->
+    {% if outstanding_fines %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Outstanding Fines</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Borrowed Date</th>
+                            <th>Due Date</th>
+                            <th>Days Overdue</th>
+                            <th>Fine Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fine in outstanding_fines %}
+                        <tr>
+                            <td>
+                                <strong>{{ fine.borrowing.book.title }}</strong><br>
+                                <small class="text-muted">{{ fine.borrowing.book.author }}</small>
+                            </td>
+                            <td>{{ fine.borrowing.borrow_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ fine.borrowing.due_date.strftime('%Y-%m-%d') }}</td>
+                            <td><span class="badge bg-danger">{{ fine.days_overdue }} days</span></td>
+                            <td><strong class="text-danger">₹{{ fine.amount }}</strong></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#paymentModal"
+                                        data-fine-id="{{ fine.id }}"
+                                        data-amount="{{ fine.amount }}"
+                                        data-book-title="{{ fine.borrowing.book.title }}">
+                                    <i class="fas fa-credit-card me-1"></i>Pay Now
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pay All Button -->
+            <div class="text-end mt-3">
+                <button type="button" class="btn btn-danger" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#payAllModal">
+                    <i class="fas fa-money-bill-wave me-2"></i>Pay All Fines (₹{{ total_fines }})
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Paid Fines History -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Payment History</h5>
+        </div>
+        <div class="card-body">
+            {% if paid_fines_history %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Fine Amount</th>
+                            <th>Paid Date</th>
+                            <th>Payment Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fine in paid_fines_history %}
+                        <tr>
+                            <td>
+                                <strong>{{ fine.borrowing.book.title }}</strong><br>
+                                <small class="text-muted">{{ fine.borrowing.book.author }}</small>
+                            </td>
+                            <td>₹{{ fine.amount }}</td>
+                            <td>{{ fine.paid_date.strftime('%Y-%m-%d') if fine.paid_date else 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ fine.payment_method|title if fine.payment_method else 'Cash' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-4">No payment history</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- No Fines Message -->
+    {% if not outstanding_fines and not paid_fines_history %}
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-smile fa-3x text-success mb-3"></i>
+            <h5>No Fines!</h5>
+            <p class="text-muted">You have no outstanding fines. Keep up the good work!</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pay Fine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="paymentForm" action="">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <h6 id="bookTitle" class="mb-2"></h6>
+                        <h4 id="fineAmount" class="mb-0 text-primary"></h4>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-select" name="payment_method" required>
+                            <option value="">Select payment method</option>
+                            <option value="card">Credit/Debit Card</option>
+                            <option value="upi">UPI</option>
+                            <option value="netbanking">Net Banking</option>
+                            <option value="wallet">Digital Wallet</option>
+                            <option value="cash">Cash</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmPayment" required>
+                        <label class="form-check-label" for="confirmPayment">
+                            I confirm that I want to pay this fine
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check me-2"></i>Confirm Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Pay All Modal -->
+<div class="modal fade" id="payAllModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Pay All Fines</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('user.pay_all_fines') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <h5 class="mb-2">Total Amount: ₹{{ total_fines }}</h5>
+                        <p class="mb-0">You are about to pay all outstanding fines.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-select" name="payment_method" required>
+                            <option value="">Select payment method</option>
+                            <option value="card">Credit/Debit Card</option>
+                            <option value="upi">UPI</option>
+                            <option value="netbanking">Net Banking</option>
+                            <option value="wallet">Digital Wallet</option>
+                            <option value="cash">Cash</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmPaymentAll" required>
+                        <label class="form-check-label" for="confirmPaymentAll">
+                            I confirm that I want to pay all fines
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-money-bill-wave me-2"></i>Pay ₹{{ total_fines }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle single fine payment modal
+document.getElementById('paymentModal').addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const fineId = button.getAttribute('data-fine-id');
+    const amount = button.getAttribute('data-amount');
+    const bookTitle = button.getAttribute('data-book-title');
+    
+    // Update modal content
+    document.getElementById('bookTitle').textContent = bookTitle;
+    document.getElementById('fineAmount').textContent = '₹' + amount;
+    
+    // Update form action
+    document.getElementById('paymentForm').action = "{{ url_for('user.pay_fine', fine_id=0) }}".replace('0', fineId);
+});
+</script>
+
+{% endblock %}

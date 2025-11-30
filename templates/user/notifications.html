@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h2 class="mb-1">Notifications</h2>
+        <p class="text-muted">Stay updated with your library activities</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if notifications %}
+            <div class="list-group list-group-flush">
+                {% for notification in notifications %}
+                <div class="list-group-item {% if not notification.is_read %}bg-light border-start border-primary border-3{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-start mb-2">
+                                <i class="fas 
+                                    {% if notification.type == 'overdue' or notification.notification_type == 'overdue' %}fa-exclamation-triangle text-danger
+                                    {% elif notification.type == 'due_soon' or notification.notification_type == 'due_reminder' %}fa-clock text-warning
+                                    {% elif notification.type == 'reservation_ready' or notification.notification_type == 'reservation' %}fa-check-circle text-success
+                                    {% elif notification.type == 'fine' or notification.notification_type == 'fine' %}fa-rupee-sign text-danger
+                                    {% elif notification.notification_type == 'borrow' %}fa-book text-primary
+                                    {% elif notification.notification_type == 'renewal' %}fa-sync text-info
+                                    {% elif notification.notification_type == 'return' %}fa-undo text-success
+                                    {% else %}fa-info-circle text-info
+                                    {% endif %} fa-lg me-3 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ notification.title }}</h6>
+                                    <p class="mb-2 text-muted">{{ notification.message }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ notification.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </small>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="mt-2">
+                                        {% if notification.action_url %}
+                                        <a href="{{ notification.action_url }}" class="btn btn-sm btn-primary me-2">
+                                            <i class="fas 
+                                                {% if notification.notification_type == 'borrow' %}fa-book
+                                                {% elif notification.notification_type == 'due_reminder' %}fa-eye
+                                                {% elif notification.notification_type == 'reservation' %}fa-book-open
+                                                {% elif notification.notification_type == 'fine' %}fa-money-bill
+                                                {% elif notification.notification_type == 'overdue' %}fa-exclamation-circle
+                                                {% elif notification.notification_type == 'renewal' %}fa-sync
+                                                {% elif notification.notification_type == 'return' %}fa-check
+                                                {% else %}fa-arrow-right
+                                                {% endif %} me-1"></i>
+                                            {% if notification.notification_type == 'borrow' %}View Book
+                                            {% elif notification.notification_type == 'due_reminder' %}View Details
+                                            {% elif notification.notification_type == 'reservation' %}Borrow Now
+                                            {% elif notification.notification_type == 'fine' %}Pay Fine
+                                            {% elif notification.notification_type == 'overdue' %}View Book
+                                            {% elif notification.notification_type == 'renewal' %}View Details
+                                            {% elif notification.notification_type == 'return' %}View History
+                                            {% else %}View
+                                            {% endif %}
+                                        </a>
+                                        {% elif notification.related_id %}
+                                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-home me-1"></i>Go to Dashboard
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if notification.notification_type in ['due_reminder', 'overdue'] %}
+                                        <a href="{{ url_for('books.index') }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-book me-1"></i>Browse Books
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column gap-1">
+                            {% if not notification.is_read %}
+                            <form method="POST" action="{{ url_for('user.mark_notification_read', notification_id=notification.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Mark as read">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('user.delete_notification', notification_id=notification.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Mark all as read button -->
+            {% if notifications %}
+            <div class="text-center mt-3">
+                <form method="POST" action="{{ url_for('user.mark_all_notifications_read') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check-double me-2"></i>Mark All as Read
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                <h5>No Notifications</h5>
+                <p class="text-muted">You're all caught up!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - Library Management System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">Search Results</h1>
+    
+    <div class="mb-4">
+        <form method="GET" action="{{ url_for('main.search') }}" class="row g-3">
+            <div class="col-auto flex-grow-1">
+                <input type="text" class="form-control" name="q" placeholder="Search for books..." value="{{ query }}" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+    </div>
+
+    {% if query %}
+        {% if books and books.items %}
+            <p class="text-muted">Found {{ books.total }} results for "{{ query }}"</p>
+            
+            <div class="row">
+                {% for book in books.items %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.title }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">by {{ book.author }}</small><br>
+                                <strong>ISBN:</strong> {{ book.isbn }}<br>
+                                <strong>Category:</strong> {{ book.category }}<br>
+                                <strong>Available:</strong> {{ book.available_copies }} / {{ book.total_copies }}
+                            </p>
+                            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-primary btn-sm">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if books.pages > 1 %}
+            <nav aria-label="Search results pagination">
+                <ul class="pagination justify-content-center">
+                    {% if books.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.search', q=query, page=books.prev_num) }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in books.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == books.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('main.search', q=query, page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if books.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.search', q=query, page=books.next_num) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <h5>No results found for "{{ query }}"</h5>
+                <p>Try searching with different keywords or check the spelling.</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-secondary">
+            <p>Enter a search term to find books by title, author, ISBN, or description.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

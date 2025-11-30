@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-box {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-box:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+    
+    .trend-up {
+        color: #28a745;
+    }
+    
+    .trend-down {
+        color: #dc3545;
+    }
+    
+    .activity-item {
+        border-left: 3px solid var(--primary-blue);
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .activity-time {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-line me-2"></i>Analytics Dashboard</h2>
+        <div>
+            <button class="btn btn-outline-primary" id="refreshData">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+            <button class="btn btn-outline-secondary" id="exportData">
+                <i class="fas fa-download me-2"></i>Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <i class="fas fa-book fa-2x mb-2"></i>
+                <div class="stat-number" id="totalBooks">{{ stats.total_books }}</div>
+                <div class="stat-label">Total Books</div>
+                <small class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.books_added_this_month }} this month</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <div class="stat-number" id="totalUsers">{{ stats.total_users }}</div>
+                <div class="stat-label">Active Users</div>
+                <small class="trend-up"><i class="fas fa-arrow-up"></i> +{{ stats.new_users_this_week }} this week</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <i class="fas fa-exchange-alt fa-2x mb-2"></i>
+                <div class="stat-number" id="activeBorrowings">{{ stats.active_borrowings }}</div>
+                <div class="stat-label">Active Borrowings</div>
+                <small><i class="fas fa-clock"></i> {{ stats.due_this_week }} due this week</small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-box">
+                <i class="fas fa-rupee-sign fa-2x mb-2"></i>
+                <div class="stat-number" id="totalRevenue">₹{{ stats.total_revenue }}</div>
+                <div class="stat-label">Total Revenue</div>
+                <small class="trend-up"><i class="fas fa-arrow-up"></i> +₹{{ stats.revenue_this_month }} this month</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row mb-4">
+        <div class="col-lg-8 col-md-12">
+            <div class="analytics-card">
+                <h5 class="mb-3"><i class="fas fa-chart-area me-2"></i>Borrowing Trends (Last 30 Days)</h5>
+                <div class="chart-container">
+                    <canvas id="borrowingChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+            <div class="analytics-card">
+                <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Books by Category</h5>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row mb-4">
+        <div class="col-lg-6 col-md-12">
+            <div class="analytics-card">
+                <h5 class="mb-3"><i class="fas fa-chart-bar me-2"></i>User Registrations</h5>
+                <div class="chart-container">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-12">
+            <div class="analytics-card">
+                <h5 class="mb-3"><i class="fas fa-star me-2"></i>Most Popular Books</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Times Borrowed</th>
+                                <th>Avg Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for book in popular_books[:10] %}
+                            <tr>
+                                <td>
+                                    <strong>{{ book.title }}</strong>
+                                    <br><small class="text-muted">{{ book.author }}</small>
+                                </td>
+                                <td><span class="badge bg-primary">{{ book.borrow_count }}</span></td>
+                                <td>
+                                    {% for i in range(book.avg_rating|int) %}
+                                    <i class="fas fa-star text-warning"></i>
+                                    {% endfor %}
+                                    {{ book.avg_rating }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Timeline and Department Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-6 col-md-12">
+            <div class="analytics-card">
+                <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% for activity in recent_activities[:15] %}
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ activity.action }}</strong>
+                            <span class="activity-time">
+                                <i class="far fa-clock me-1"></i>{{ activity.timestamp }}
+                            </span>
+                        </div>
+                        <small class="text-muted">{{ activity.details }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-12">
+            <div class="analytics-card">
+                <h5 class="mb-3"><i class="fas fa-graduation-cap me-2"></i>Department-wise Statistics</h5>
+                <div class="chart-container">
+                    <canvas id="departmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Stats -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h5 class="mb-3"><i class="fas fa-crown me-2"></i>Subscription Analytics</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-success">{{ subscription_stats.basic }}</h3>
+                        <p class="text-muted">Basic Users</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ subscription_stats.premium }}</h3>
+                        <p class="text-muted">Premium Users</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-warning">{{ subscription_stats.vip }}</h3>
+                        <p class="text-muted">VIP Users</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info">₹{{ subscription_stats.monthly_revenue }}</h3>
+                        <p class="text-muted">Monthly Revenue</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Chart.js Global Configuration
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#495057';
+
+    // Borrowing Trends Chart
+    const borrowingCtx = document.getElementById('borrowingChart').getContext('2d');
+    new Chart(borrowingCtx, {
+        type: 'line',
+        data: {
+            labels: {{ borrowing_labels|safe }},
+            datasets: [{
+                label: 'Books Borrowed',
+                data: {{ borrowing_data|safe }},
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Books Returned',
+                data: {{ return_data|safe }},
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+
+    // Category Distribution Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_data|safe }},
+                backgroundColor: [
+                    '#007bff', '#28a745', '#ffc107', '#dc3545',
+                    '#17a2b8', '#6f42c1', '#fd7e14', '#20c997'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+
+    // Registration Chart
+    const registrationCtx = document.getElementById('registrationChart').getContext('2d');
+    new Chart(registrationCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ registration_labels|safe }},
+            datasets: [{
+                label: 'New Registrations',
+                data: {{ registration_data|safe }},
+                backgroundColor: '#141438'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Department Chart
+    const departmentCtx = document.getElementById('departmentChart').getContext('2d');
+    new Chart(departmentCtx, {
+        type: 'radar',
+        data: {
+            labels: {{ department_labels|safe }},
+            datasets: [{
+                label: 'Active Users',
+                data: {{ department_users|safe }},
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)'
+            }, {
+                label: 'Books Borrowed',
+                data: {{ department_borrowings|safe }},
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.2)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Refresh Data
+    document.getElementById('refreshData').addEventListener('click', function() {
+        location.reload();
+    });
+
+    // Export Data
+    document.getElementById('exportData').addEventListener('click', function() {
+        window.location.href = '/admin/export-analytics';
+    });
+
+    // Auto-refresh every 5 minutes
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Membership Plans{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-white mb-3">Choose Your Membership Plan</h1>
+        <p class="lead text-white-50">Select the perfect plan for your reading needs</p>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="row g-4 mb-5">
+        <!-- Free Plan -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-lg border-0">
+                <div class="card-header bg-secondary text-white text-center py-4">
+                    <h3 class="mb-0">Basic</h3>
+                    <p class="mb-0 small">For casual readers</p>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-3 fw-bold mb-3">Free</div>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Borrow up to 2 books</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>14-day borrowing period</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Access to basic catalog</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Reserve 1 book</li>
+                        <li class="mb-3"><i class="fas fa-times text-muted me-2"></i>No priority support</li>
+                        <li class="mb-3"><i class="fas fa-times text-muted me-2"></i>No late fee waiver</li>
+                    </ul>
+                    <button class="btn btn-outline-secondary btn-lg w-100" disabled>Current Plan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Standard Plan -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-lg border-primary border-3 position-relative">
+                <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-primary px-3 py-2">
+                    Most Popular
+                </span>
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0">Standard</h3>
+                    <p class="mb-0 small">For regular readers</p>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="display-3 fw-bold">₹299</span>
+                        <span class="text-muted">/month</span>
+                    </div>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Borrow up to 5 books</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>30-day borrowing period</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Full catalog access</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Reserve 3 books</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Email support</li>
+                        <li class="mb-3"><i class="fas fa-check text-success me-2"></i>1 late fee waiver/month</li>
+                    </ul>
+                    <a href="{{ url_for('user.upgrade_plan', plan='standard') }}" class="btn btn-primary btn-lg w-100">
+                        Upgrade Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Plan -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-header text-white text-center py-4 border-0" style="background: rgba(255,255,255,0.1);">
+                    <h3 class="mb-0">Premium</h3>
+                    <p class="mb-0 small">For book enthusiasts</p>
+                </div>
+                <div class="card-body text-center text-white">
+                    <div class="mb-3">
+                        <span class="display-3 fw-bold">₹599</span>
+                        <span class="opacity-75">/month</span>
+                    </div>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>Unlimited borrowing</li>
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>60-day borrowing period</li>
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>Premium & rare books access</li>
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>Unlimited reservations</li>
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>Priority support</li>
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>No late fees</li>
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>Free book downloads (PDF)</li>
+                        <li class="mb-3"><i class="fas fa-check me-2"></i>Early access to new books</li>
+                    </ul>
+                    <a href="{{ url_for('user.upgrade_plan', plan='premium') }}" class="btn btn-light btn-lg w-100">
+                        Go Premium
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Annual Plans -->
+    <div class="text-center mb-4">
+        <h2 class="text-white mb-3">Save More with Annual Plans</h2>
+        <p class="text-white-50">Get 2 months free when you choose an annual subscription</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Standard Annual</h4>
+                            <p class="text-muted mb-0">Save ₹598/year</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="h3 mb-0 fw-bold text-primary">₹2,990</div>
+                            <small class="text-muted text-decoration-line-through">₹3,588</small>
+                        </div>
+                        <a href="{{ url_for('user.upgrade_plan', plan='standard_annual') }}" class="btn btn-primary">
+                            Subscribe
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body p-4 text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Premium Annual</h4>
+                            <p class="opacity-75 mb-0">Save ₹1,198/year</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="h3 mb-0 fw-bold">₹5,990</div>
+                            <small class="opacity-75 text-decoration-line-through">₹7,188</small>
+                        </div>
+                        <a href="{{ url_for('user.upgrade_plan', plan='premium_annual') }}" class="btn btn-light">
+                            Subscribe
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Comparison -->
+    <div class="card shadow-lg border-0 mb-5">
+        <div class="card-header bg-dark text-white text-center py-3">
+            <h3 class="mb-0">Features Comparison</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40%;">Feature</th>
+                            <th class="text-center">Basic</th>
+                            <th class="text-center">Standard</th>
+                            <th class="text-center">Premium</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Books to Borrow</td>
+                            <td class="text-center">2</td>
+                            <td class="text-center">5</td>
+                            <td class="text-center"><strong>Unlimited</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Borrowing Period</td>
+                            <td class="text-center">14 days</td>
+                            <td class="text-center">30 days</td>
+                            <td class="text-center"><strong>60 days</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Reservations</td>
+                            <td class="text-center">1</td>
+                            <td class="text-center">3</td>
+                            <td class="text-center"><strong>Unlimited</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Late Fee Waivers</td>
+                            <td class="text-center">-</td>
+                            <td class="text-center">1/month</td>
+                            <td class="text-center"><strong>No Late Fees</strong></td>
+                        </tr>
+                        <tr>
+                            <td>PDF Downloads</td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Priority Support</td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Early Access to New Books</td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="text-center">
+        <h3 class="text-white mb-4">Frequently Asked Questions</h3>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-body text-start">
+                        <h5 class="card-title"><i class="fas fa-question-circle text-primary me-2"></i>Can I change my plan?</h5>
+                        <p class="card-text text-muted">Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-body text-start">
+                        <h5 class="card-title"><i class="fas fa-question-circle text-primary me-2"></i>What payment methods do you accept?</h5>
+                        <p class="card-text text-muted">We accept all major credit/debit cards, UPI, net banking, and digital wallets.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

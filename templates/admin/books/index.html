@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Books - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .book-table-img {
+        width: 50px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .filter-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        padding: 25px;
+        margin-bottom: 25px;
+        border: none;
+    }
+    
+    .filter-card .form-control,
+    .filter-card .form-select {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-card .form-control:focus,
+    .filter-card .form-select:focus {
+        border-color: white;
+        background: white;
+        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.3);
+    }
+    
+    .filter-card .input-group-text {
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-right: none;
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .filter-card .btn-primary {
+        background: white;
+        color: #667eea;
+        border: 2px solid white;
+        font-weight: 600;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-card .btn-primary:hover {
+        background: #764ba2;
+        color: white;
+        border-color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .action-btn {
+        padding: 5px 10px;
+        margin: 2px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-book me-2"></i>Manage Books</h2>
+        <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add New Book
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="GET" action="{{ url_for('admin.books') }}" class="row g-3">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Search by title, author, or ISBN..." 
+                           value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if current_category == cat.id|string %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="availability" class="form-select">
+                    <option value="">All Books</option>
+                    <option value="available">Available Only</option>
+                    <option value="unavailable">Unavailable Only</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-2"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Books Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Cover</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>ISBN</th>
+                            <th>Category</th>
+                            <th>Available</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th style="width: 200px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if books.items %}
+                            {% for book in books.items %}
+                            <tr>
+                                <td>
+                                    {% if book.cover_image and book.cover_image != 'default_book.png' %}
+                                    <img src="{{ url_for('static', filename='images/books/' + book.cover_image) }}" 
+                                         class="book-table-img" alt="{{ book.title }}">
+                                    {% else %}
+                                    <div class="book-table-img d-flex align-items-center justify-content-center" 
+                                         style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                        <i class="fas fa-book fa-2x"></i>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ book.title }}</strong>
+                                    {% if book.publication_year %}
+                                    <br><small class="text-muted">({{ book.publication_year }})</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ book.author }}</td>
+                                <td><code>{{ book.isbn }}</code></td>
+                                <td>
+                                    {% if book.category %}
+                                    <span class="badge bg-primary">{{ book.category }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No Category</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if book.available_copies > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ book.available_copies }}
+                                    </span>
+                                </td>
+                                <td>{{ book.total_copies }}</td>
+                                <td>
+                                    {% if book.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('books.detail', book_id=book.id) }}" 
+                                       class="btn btn-sm btn-outline-info action-btn" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.edit_book', book_id=book.id) }}" 
+                                       class="btn btn-sm btn-outline-primary action-btn" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger action-btn" 
+                                            onclick="deleteBook({{ book.id }}, '{{ book.title }}')" 
+                                            title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No books found</p>
+                                    <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Add Your First Book
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if books.pages > 1 %}
+            <nav aria-label="Books pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if not books.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.books', page=books.prev_num, search=search, category=current_category) }}">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    
+                    {% for page_num in books.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == books.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('admin.books', page=page_num, search=search, category=current_category) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if not books.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.books', page=books.next_num, search=search, category=current_category) }}">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+
+            <!-- Stats Footer -->
+            <div class="mt-4 text-center text-muted">
+                <small>
+                    Showing {{ books.items|length }} of {{ books.total }} books
+                    {% if search %} | Filtered by: "{{ search }}"{% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="bookTitle"></strong>?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Delete Book</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function deleteBook(bookId, bookTitle) {
+        document.getElementById('bookTitle').textContent = bookTitle;
+        document.getElementById('deleteForm').action = `/admin/books/${bookId}/delete`;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+{% endblock %}

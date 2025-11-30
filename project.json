@@ -1,0 +1,108 @@
+{
+  "name": "digital-learning-library",
+  "version": "2.0.0",
+  "description": "Complete Library Management System with Email, Payments, and Digital Reading",
+  "author": "Kumar G <bothackerr03@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KUMARG0605/LIbrary-management.git"
+  },
+  "features": {
+    "email": {
+      "verification": true,
+      "welcome": true,
+      "login_alerts": true,
+      "due_reminders": true,
+      "overdue_notices": true,
+      "reservation_alerts": true,
+      "announcements": true,
+      "payment_receipts": true,
+      "subscription_confirmations": true,
+      "password_reset": true
+    },
+    "payments": {
+      "razorpay": true,
+      "phonepe": true,
+      "gpay": true,
+      "upi": true,
+      "automatic_receipts": true,
+      "refund_support": true
+    },
+    "subscriptions": {
+      "basic": {
+        "price_monthly": 0,
+        "max_books": 3,
+        "digital_access": "Limited"
+      },
+      "premium": {
+        "price_monthly": 299,
+        "price_yearly": 2999,
+        "max_books": 5,
+        "digital_access": "Full"
+      },
+      "vip": {
+        "price_monthly": 599,
+        "price_yearly": 5999,
+        "max_books": 10,
+        "digital_access": "Unlimited"
+      }
+    },
+    "digital_reader": {
+      "formats": ["PDF", "EPUB"],
+      "progress_tracking": true,
+      "bookmarks": true,
+      "highlights": true,
+      "notes": true,
+      "customization": {
+        "font_size": true,
+        "line_height": true,
+        "reading_modes": ["Light", "Sepia", "Dark"],
+        "zoom": true
+      }
+    },
+    "admin": {
+      "user_management": true,
+      "book_management": true,
+      "digital_book_upload": true,
+      "analytics": true,
+      "announcements": true,
+      "email_broadcasts": true,
+      "activity_logs": true
+    }
+  },
+  "tech_stack": {
+    "backend": "Flask 3.0",
+    "database": "SQLAlchemy (SQLite/PostgreSQL)",
+    "email": "Flask-Mail (Gmail SMTP)",
+    "payments": "Razorpay SDK",
+    "frontend": "Bootstrap 5 + jQuery",
+    "authentication": "Flask-Login",
+    "forms": "Flask-WTF"
+  },
+  "email_configuration": {
+    "sender": "bothackerr03@gmail.com",
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "use_tls": true
+  },
+  "scripts": {
+    "setup": "powershell -ExecutionPolicy Bypass -File setup.ps1",
+    "start": "python app_new.py",
+    "init_db": "python -c \"from app_new import app, db; app.app_context().push(); db.create_all()\"",
+    "test": "pytest tests/",
+    "docker": "docker-compose up -d --build"
+  },
+  "keywords": [
+    "library",
+    "management",
+    "flask",
+    "python",
+    "email",
+    "payments",
+    "razorpay",
+    "digital-books",
+    "subscriptions",
+    "full-stack"
+  ]
+}

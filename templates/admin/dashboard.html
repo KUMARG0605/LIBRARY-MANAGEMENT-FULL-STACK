@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - DIGITAL LEARNING{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+        color: white;
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(40%, -40%);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 45px rgba(0,0,0,0.25);
+    }
+    
+    .stat-icon {
+        font-size: 3.5rem;
+        opacity: 0.95;
+        margin-bottom: 0;
+        background: rgba(255, 255, 255, 0.15);
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-number {
+        font-size: 2.75rem;
+        font-weight: 800;
+        margin: 0;
+        line-height: 1.2;
+        letter-spacing: -1px;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 25px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .dashboard-card h5 {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+    
+    .activity-item {
+        border-left: 4px solid var(--primary-blue);
+        padding: 15px 18px;
+        margin-bottom: 12px;
+        background: linear-gradient(90deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+    
+    .activity-item:hover {
+        background: linear-gradient(90deg, #e9ecef 0%, #f8f9fa 100%);
+        transform: translateX(5px);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .activity-time {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .quick-action-btn {
+        width: 100%;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        border: 2px solid var(--primary-blue);
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        color: var(--primary-blue);
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        text-align: left;
+    }
+    
+    .quick-action-btn:hover {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+        color: white;
+        transform: translateX(8px);
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+        border-color: var(--primary-dark);
+    }
+    
+    .trend-chart {
+        height: 220px;
+    }
+    
+    .book-mini-card {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #f0f0f0;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s;
+        background: white;
+    }
+    
+    .book-mini-card:hover {
+        border-color: var(--primary-blue);
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.15);
+        transform: translateY(-3px);
+    }
+    
+    .book-mini-thumb {
+        width: 55px;
+        height: 75px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom">
+        <div>
+            <h1 class="fw-bold text-dark mb-2">
+                <i class="fas fa-tachometer-alt me-3" style="color: var(--primary-blue);"></i>Admin Dashboard
+            </h1>
+            <p class="text-muted mb-0 fs-5">
+                <i class="fas fa-user-shield me-2"></i>Welcome back, <strong>{{ current_user.full_name }}</strong>!
+            </p>
+        </div>
+        <div class="text-end">
+            <div class="mb-2">
+                <span class="badge bg-success fs-6 px-3 py-2">
+                    <i class="fas fa-circle me-2" style="font-size: 0.6rem;"></i>System Online
+                </span>
+            </div>
+            <p class="text-muted mb-0">
+                <i class="far fa-calendar-alt me-2"></i>{{ datetime.now().strftime('%B %d, %Y') }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card h-100" onclick="window.location.href='{{ url_for('admin.books') }}'" style="cursor: pointer;">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3"><i class="fas fa-book"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number mb-1">{{ stats.total_books }}</div>
+                        <div class="stat-label">Total Books</div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-top border-light">
+                    <small class="text-white-50"><i class="fas fa-arrow-up me-1"></i>Manage Books</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card h-100" style="background: linear-gradient(135deg, #28a745, #20c997);" onclick="window.location.href='{{ url_for('admin.users') }}'" style="cursor: pointer;">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3"><i class="fas fa-users"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number mb-1">{{ stats.total_users }}</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-top border-light">
+                    <small class="text-white-50"><i class="fas fa-user-plus me-1"></i>View All Users</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card h-100" style="background: linear-gradient(135deg, #ffc107, #ff9800);" onclick="window.location.href='{{ url_for('admin.borrowings') }}'" style="cursor: pointer;">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3"><i class="fas fa-exchange-alt"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number mb-1">{{ stats.active_borrowings }}</div>
+                        <div class="stat-label">Active Borrowings</div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-top border-light">
+                    <small class="text-white-50"><i class="fas fa-exclamation-circle me-1"></i>{{ stats.overdue_books }} Overdue</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card h-100" style="background: linear-gradient(135deg, #dc3545, #c82333);" onclick="window.location.href='{{ url_for('admin.borrowings') }}?filter=fines'" style="cursor: pointer;">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3"><i class="fas fa-rupee-sign"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number mb-1">₹{{ "%.2f"|format(stats.total_fines) }}</div>
+                        <div class="stat-label">Total Fines</div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-top border-light">
+                    <small class="text-white-50"><i class="fas fa-money-bill-wave me-1"></i>Collect Fines</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+
+            <!-- Recent Activities -->
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Borrowings</h5>
+                    <a href="{{ url_for('admin.borrowings') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% if recent_borrowings %}
+                        {% for borrowing in recent_borrowings %}
+                        <div class="activity-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ borrowing.user.full_name }}</strong> borrowed 
+                                    <a href="{{ url_for('books.detail', book_id=borrowing.book.id) }}" class="text-primary">
+                                        {{ borrowing.book.title }}
+                                    </a>
+                                    {% if borrowing.status == 'borrowed' %}
+                                        <span class="badge bg-success ms-2">Active</span>
+                                    {% elif borrowing.status == 'returned' %}
+                                        <span class="badge bg-secondary ms-2">Returned</span>
+                                    {% elif borrowing.is_overdue() %}
+                                        <span class="badge bg-danger ms-2">Overdue</span>
+                                    {% endif %}
+                                </div>
+                                <span class="activity-time">
+                                    <i class="far fa-clock me-1"></i>{{ borrowing.borrow_date.strftime('%b %d, %I:%M %p') }}
+                                </span>
+                            </div>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-calendar-alt me-1"></i>Due: {{ borrowing.due_date.strftime('%b %d, %Y') }}
+                                {% if borrowing.fine_amount > 0 %}
+                                    | <i class="fas fa-rupee-sign me-1"></i>Fine: ₹{{ "%.2f"|format(borrowing.fine_amount) }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>No recent borrowings</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Top Borrowed Books -->
+            <div class="dashboard-card">
+                <h5 class="mb-3"><i class="fas fa-trophy me-2"></i>Top Borrowed Books</h5>
+                {% if top_books %}
+                    {% for book, count in top_books %}
+                    <div class="book-mini-card">
+                        {% if book.cover_image and book.cover_image != 'default_book.png' %}
+                        <img src="{{ url_for('static', filename='images/books/' + book.cover_image) }}" 
+                             class="book-mini-thumb" alt="{{ book.title }}">
+                        {% else %}
+                        <div class="book-mini-thumb d-flex align-items-center justify-content-center" 
+                             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <i class="fas fa-book fa-lg"></i>
+                        </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ book.title }}</h6>
+                            <small class="text-muted">{{ book.author }}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge bg-primary">{{ count }} borrows</div>
+                            <small class="d-block text-muted mt-1">{{ book.available_copies }} available</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">No borrowing data yet</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <h5 class="mb-3"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                <a href="{{ url_for('admin.add_book') }}" class="quick-action-btn">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Book
+                </a>
+                <a href="{{ url_for('admin.users') }}" class="quick-action-btn">
+                    <i class="fas fa-users me-2"></i>Manage Users
+                </a>
+                <a href="{{ url_for('admin.borrowings') }}" class="quick-action-btn">
+                    <i class="fas fa-exchange-alt me-2"></i>View Borrowings
+                </a>
+                <a href="{{ url_for('admin.books') }}" class="quick-action-btn">
+                    <i class="fas fa-book me-2"></i>Manage Books
+                </a>
+                <a href="{{ url_for('admin.settings') }}" class="quick-action-btn">
+                    <i class="fas fa-cog me-2"></i>System Settings
+                </a>
+            </div>
+
+            <!-- Alerts -->
+            <div class="dashboard-card" style="background: linear-gradient(135deg, #fff5e6 0%, #ffffff 100%);">
+                <h5 class="mb-4">
+                    <i class="fas fa-bell me-2" style="color: #ff9800;"></i>System Alerts
+                </h5>
+                {% if stats.overdue_books > 0 %}
+                <div class="alert alert-warning border-0 shadow-sm mb-3" role="alert" style="border-left: 4px solid #ffc107 !important;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clock fa-2x me-3" style="color: #ffc107;"></i>
+                        <div>
+                            <strong class="fs-5">{{ stats.overdue_books }}</strong> Overdue Books
+                            <p class="mb-0 text-muted small">Require immediate attention</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-success border-0 shadow-sm mb-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>No overdue books
+                </div>
+                {% endif %}
+                
+                {% if stats.pending_reservations > 0 %}
+                <div class="alert alert-info border-0 shadow-sm mb-3" role="alert" style="border-left: 4px solid #17a2b8 !important;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-bookmark fa-2x me-3" style="color: #17a2b8;"></i>
+                        <div>
+                            <strong class="fs-5">{{ stats.pending_reservations }}</strong> Pending Reservations
+                            <p class="mb-0 text-muted small">Awaiting processing</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-success border-0 shadow-sm mb-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>No pending reservations
+                </div>
+                {% endif %}
+                
+                {% if stats.total_fines > 0 %}
+                <div class="alert alert-danger border-0 shadow-sm mb-0" role="alert" style="border-left: 4px solid #dc3545 !important;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-rupee-sign fa-2x me-3" style="color: #dc3545;"></i>
+                        <div>
+                            <strong class="fs-5">₹{{ "%.2f"|format(stats.total_fines) }}</strong> Total Fines
+                            <p class="mb-0 text-muted small">Pending collection</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-success border-0 shadow-sm mb-0" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>No outstanding fines
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Users -->
+            <div class="dashboard-card">
+                <h5 class="mb-3"><i class="fas fa-user-plus me-2"></i>Recent Registrations</h5>
+                {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ user.full_name }}</strong>
+                                    <br><small class="text-muted">{{ user.user_id }} • {{ user.role }}</small>
+                                </div>
+                                <small class="text-muted">{{ user.created_at.strftime('%b %d') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center text-muted">No recent registrations</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any custom JavaScript for the dashboard here
+    console.log('Admin Dashboard Loaded');
+</script>
+{% endblock %}

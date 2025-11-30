@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Books - DIGITAL LEARNING{% endblock %}
+
+{% block head %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="text-dark mb-3"><i class="fas fa-book me-2"></i>All Available Books</h1>
+            <p class="text-dark">Browse, search, and filter from our complete collection</p>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 15px;">
+        <div class="card-body" style="padding: 25px;">
+            <form method="GET" action="{{ url_for('books.index') }}" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-white fw-bold mb-2">
+                            <i class="fas fa-search me-2"></i>Search Books
+                        </label>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Search by title, author, or ISBN..." 
+                               value="{{ request.args.get('search', '') }}"
+                               style="border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.95); border-radius: 10px; padding: 12px 15px;">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-white fw-bold mb-2">
+                            <i class="fas fa-graduation-cap me-2"></i>Department
+                        </label>
+                        <select name="department" class="form-select" 
+                                style="border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.95); border-radius: 10px; padding: 12px 15px;">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept }}" {% if request.args.get('department') == dept %}selected{% endif %}>
+                                {{ dept }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-white fw-bold mb-2">
+                            <i class="fas fa-th-large me-2"></i>Category
+                        </label>
+                        <select name="category" class="form-select" 
+                                style="border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.95); border-radius: 10px; padding: 12px 15px;">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if request.args.get('category') == cat %}selected{% endif %}>
+                                {{ cat }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-white fw-bold mb-2">
+                            <i class="fas fa-check-circle me-2"></i>Availability
+                        </label>
+                        <select name="availability" class="form-select" 
+                                style="border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.95); border-radius: 10px; padding: 12px 15px;">
+                            <option value="">All Books</option>
+                            <option value="available" {% if request.args.get('availability') == 'available' %}selected{% endif %}>
+                                Available Only
+                            </option>
+                            <option value="unavailable" {% if request.args.get('availability') == 'unavailable' %}selected{% endif %}>
+                                Not Available
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-white fw-bold mb-2" style="opacity: 0;">Actions</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn w-50" 
+                                    style="background: white; color: #667eea; border: 2px solid white; font-weight: 600; padding: 12px 20px; border-radius: 10px;">
+                                <i class="fas fa-filter me-2"></i>Filter
+                            </button>
+                            <a href="{{ url_for('books.index') }}" class="btn w-50" 
+                               style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; font-weight: 600; padding: 12px 20px; border-radius: 10px;">
+                                <i class="fas fa-redo me-2"></i>Reset
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Books Table -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Books Directory</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="booksTable" class="table table-hover table-striped mb-0" style="width:100%">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Book Name</th>
+                            <th>Author</th>
+                            <th>Department</th>
+                            <th>Category</th>
+                            <th>ISBN</th>
+                            <th>Available</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in books.items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if book.cover_image %}
+                                    <img src="{{ url_for('static', filename='uploads/covers/' + book.cover_image) }}" 
+                                         alt="{{ book.title }}" class="me-2" 
+                                         style="width: 40px; height: 60px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-secondary me-2 d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 60px;">
+                                        <i class="fas fa-book text-white"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ book.title }}</strong>
+                                        {% if book.subtitle %}
+                                        <br><small class="text-muted">{{ book.subtitle[:50] }}...</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ book.author }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ book.department or 'General' }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ book.category or 'Uncategorized' }}</span>
+                            </td>
+                            <td><small class="font-monospace">{{ book.isbn }}</small></td>
+                            <td>
+                                {% if book.is_available() %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>{{ book.available_copies }} copies
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i>Not Available
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <!-- View Button -->
+                                    <a href="{{ url_for('books.detail', book_id=book.id) }}" 
+                                       class="btn btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    
+                                    <!-- Download Button (for premium users) -->
+                                    {% if current_user.is_authenticated %}
+                                    <button class="btn btn-outline-success" title="Download PDF" 
+                                            onclick="downloadBook({{ book.id }}, '{{ book.title }}')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <!-- Borrow Button -->
+                                    {% if current_user.is_authenticated %}
+                                        {% if book.is_available() %}
+                                        <form method="POST" action="{{ url_for('books.borrow', book_id=book.id) }}" 
+                                              class="d-inline" onsubmit="return confirm('Borrow this book?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-outline-warning" title="Borrow Book">
+                                                <i class="fas fa-book-reader"></i>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <button class="btn btn-outline-secondary" disabled title="Not Available">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                        {% endif %}
+                                    {% else %}
+                                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-warning" 
+                                       title="Login to Borrow">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mt-4 g-3">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ books.total }}</h3>
+                    <small>Total Books</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ available_count }}</h3>
+                    <small>Available Now</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ categories|length }}</h3>
+                    <small>Categories</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ departments|length }}</h3>
+                    <small>Departments</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Download Modal -->
+<div class="modal fade" id="downloadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Download Book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This feature is available for Premium members only.</p>
+                <p>Upgrade to Premium to download books as PDFs.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('user.pricing') }}" class="btn btn-primary">Upgrade to Premium</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#booksTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        order: [[0, 'asc']], // Sort by book name by default
+        language: {
+            search: "Search books:",
+            lengthMenu: "Show _MENU_ books per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ books",
+            infoFiltered: "(filtered from _MAX_ total books)"
+        },
+        columnDefs: [
+            { orderable: false, targets: 6 } // Disable sorting on Actions column
+        ]
+    });
+});
+
+function downloadBook(bookId, bookTitle) {
+    // Show premium upgrade modal
+    var modal = new bootstrap.Modal(document.getElementById('downloadModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

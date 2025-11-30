@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ department }} Department Books{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h2 class="mb-1">{{ department }} Department</h2>
+        <p class="text-muted">Browse books for the {{ department }} department</p>
+    </div>
+
+    {% if books %}
+    <div class="row">
+        {% for book in books %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if book.cover_image and book.cover_image != 'default_book.png' %}
+                <img src="{{ url_for('static', filename='images/books/' + book.cover_image) }}" 
+                     class="card-img-top" 
+                     alt="{{ book.title }}"
+                     style="height: 300px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top d-flex align-items-center justify-content-center" 
+                     style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <i class="fas fa-book fa-4x"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title">{{ book.title }}</h6>
+                    <p class="card-text text-muted small">{{ book.author }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-info">{{ book.department }}</span>
+                        {% if book.available_copies > 0 %}
+                        <span class="badge bg-success">{{ book.available_copies }} available</span>
+                        {% else %}
+                        <span class="badge bg-danger">Not Available</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-primary w-100">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+        <h5>No Books Found</h5>
+        <p class="text-muted">There are no books for this department yet</p>
+        <a href="{{ url_for('books.index') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-2"></i>Browse All Books
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

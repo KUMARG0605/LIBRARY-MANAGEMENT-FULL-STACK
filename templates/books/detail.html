@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - Digital Learning Library{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Book Icon Display -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-img-top d-flex align-items-center justify-content-center flex-column" 
+                     style="height: 500px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <i class="fas fa-book-open" style="font-size: 10rem; opacity: 0.9;"></i>
+                    <h5 class="mt-4 px-3 text-center" style="opacity: 0.95;">{{ book.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <!-- Read Online Button -->
+                        <a href="{{ url_for('books.read_online', book_id=book.id) }}" class="btn btn-info w-100" target="_blank">
+                            <i class="fas fa-book-reader me-2"></i>Read Online
+                        </a>
+                        
+                        <!-- Download Button -->
+                        {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('books.download_pdf', book_id=book.id) }}" class="btn btn-success w-100">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-success w-100">
+                            <i class="fas fa-download me-2"></i>Login to Download
+                        </a>
+                        {% endif %}
+                        
+                        <!-- View in Browser -->
+                        <a href="{{ url_for('static', filename='books/pdfs/' + book.id|string + '.pdf') }}" 
+                           class="btn btn-outline-primary w-100" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>Open in New Tab
+                        </a>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    {% if book.is_available() %}
+                        <div class="d-grid gap-2">
+                            {% if current_user.is_authenticated %}
+                                {% if not user_borrowed %}
+                                    <form method="POST" action="{{ url_for('books.borrow', book_id=book.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="fas fa-book-reader me-2"></i>Borrow Physical Book
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <button class="btn btn-secondary btn-lg w-100" disabled>
+                                        <i class="fas fa-check me-2"></i>Already Borrowed
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login to Borrow
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        {% if current_user.is_authenticated and not user_reserved %}
+                            <form method="POST" action="{{ url_for('books.reserve', book_id=book.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="btn btn-warning btn-lg w-100">
+                                    <i class="fas fa-bookmark me-2"></i>Reserve Book
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-secondary btn-lg w-100" disabled>
+                                Not Available
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Book Details -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title mb-3">{{ book.title }}</h2>
+                    
+                    <div class="mb-4">
+                        <span class="badge bg-primary me-2">{{ book.category or 'General' }}</span>
+                        <span class="badge bg-info me-2">{{ book.department or 'N/A' }}</span>
+                        {% if book.is_available() %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                        {% endif %}
+                    </div>
+
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="30%"><i class="fas fa-user me-2"></i>Author</th>
+                            <td>{{ book.author }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-barcode me-2"></i>ISBN</th>
+                            <td>{{ book.isbn }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-building me-2"></i>Publisher</th>
+                            <td>{{ book.publisher or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-calendar me-2"></i>Publication Year</th>
+                            <td>{{ book.publication_year or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-book me-2"></i>Edition</th>
+                            <td>{{ book.edition or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-language me-2"></i>Language</th>
+                            <td>{{ book.language }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-file-alt me-2"></i>Pages</th>
+                            <td>{{ book.pages or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-copy me-2"></i>Copies</th>
+                            <td>{{ book.available_copies }} / {{ book.total_copies }}</td>
+                        </tr>
+                        <tr>
+                            <th><i class="fas fa-map-marker-alt me-2"></i>Shelf Location</th>
+                            <td>{{ book.shelf_location or 'N/A' }}</td>
+                        </tr>
+                    </table>
+
+                    {% if book.description %}
+                    <div class="mt-4">
+                        <h5><i class="fas fa-info-circle me-2"></i>Description</h5>
+                        <p class="text-muted">{{ book.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-star me-2"></i>Rating</h5>
+                        <div class="rating-stars">
+                            {% set avg_rating = book.get_average_rating() %}
+                            {% for i in range(5) %}
+                                {% if i < avg_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span class="ms-2">({{ '%.1f'|format(avg_rating) }} / 5)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ review.user.full_name }}</strong>
+                                    <div class="rating-stars small">
+                                        {% for i in range(review.rating) %}
+                                            <i class="fas fa-star"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            {% if review.review_text %}
+                                <p class="mt-2 mb-0">{{ review.review_text }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No reviews yet</p>
+                    {% endif %}
+
+                    {% if user_can_review %}
+                        <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                            <i class="fas fa-plus me-2"></i>Add Review
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+{% if user_can_review %}
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('books.add_review', book_id=book.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <select name="rating" class="form-select" required>
+                            <option value="">Select rating</option>
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Review (Optional)</label>
+                        <textarea name="review_text" class="form-control" rows="4" placeholder="Share your thoughts..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- PDF Viewer Modal -->
+<div class="modal fade" id="pdfViewerModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="pdfTitle">Reading: Book Title</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="pdfFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openPDFViewer(bookId, bookTitle) {
+    document.getElementById('pdfTitle').textContent = 'Reading: ' + bookTitle;
+    document.getElementById('pdfFrame').src = "{{ url_for('books.view_pdf', book_id=0) }}".replace('0', bookId);
+    var modal = new bootstrap.Modal(document.getElementById('pdfViewerModal'));
+    modal.show();
+}
+</script>
+
+{% endblock %}

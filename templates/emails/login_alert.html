@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #ff9800;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .alert-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">📚 Digital Learning Library</div>
+        </div>
+        
+        <div class="content">
+            <h2>🔐 New Login Detected</h2>
+            <p>Hello {{ user.full_name }},</p>
+            
+            <div class="alert-box">
+                <strong>⚠️ Security Alert:</strong> We detected a new login to your account.
+            </div>
+            
+            <h3>Login Details:</h3>
+            <div class="info-box">
+                <p style="margin: 5px 0;"><strong>Time:</strong> {{ login_time.strftime('%B %d, %Y at %I:%M %p UTC') }}</p>
+                <p style="margin: 5px 0;"><strong>IP Address:</strong> {{ ip_address }}</p>
+                <p style="margin: 5px 0;"><strong>Device:</strong> {{ device_info }}</p>
+            </div>
+            
+            <p><strong>Was this you?</strong></p>
+            <p>If you recognize this activity, no action is needed. You can safely ignore this email.</p>
+            
+            <p><strong>Don't recognize this activity?</strong></p>
+            <p>If you didn't log in, please take immediate action:</p>
+            <ol>
+                <li>Change your password immediately</li>
+                <li>Review your account activity</li>
+                <li>Contact us at <a href="mailto:bothackerr03@gmail.com">bothackerr03@gmail.com</a></li>
+            </ol>
+            
+            <p style="margin-top: 20px; padding: 15px; background-color: #e3f2fd; border-radius: 5px;">
+                <strong>💡 Security Tip:</strong> Always use a strong, unique password and never share your account credentials with anyone.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Digital Learning Library</strong></p>
+            <p>Email: bothackerr03@gmail.com</p>
+            <p>&copy; 2025 Digital Learning Library. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

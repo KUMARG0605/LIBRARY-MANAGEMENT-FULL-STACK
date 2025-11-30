@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Digital Learning Library{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient text-white py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-3 fw-bold mb-4" style="color: #000000 !important;">Welcome to Digital Learning Library</h1>
+                    <p class="lead mb-4" style="color: #000000 !important;">Your gateway to knowledge. Explore thousands of books, research papers, and academic resources at your fingertips.</p>
+                    <div class="d-flex gap-3">
+                        <a href="{{ url_for('books.index') }}" class="btn btn-light btn-lg px-4 shadow">
+                            <i class="fas fa-book me-2"></i>Browse Books
+                        </a>
+                        {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i>Join Now
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center mt-4 mt-lg-0">
+                    <i class="fas fa-book-open fa-10x opacity-75 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section py-5 bg-light">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card p-4 rounded shadow" 
+                         style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; transform: translateY(0); transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 12px 30px rgba(102, 126, 234, 0.4)';"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
+                        <i class="fas fa-book fa-3x text-white mb-3"></i>
+                        <h3 class="fw-bold text-white">{{ stats.total_books }}</h3>
+                        <p class="text-white mb-0">Total Books</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card p-4 rounded shadow" 
+                         style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border: none; transform: translateY(0); transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 12px 30px rgba(17, 153, 142, 0.4)';"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
+                        <i class="fas fa-users fa-3x text-white mb-3"></i>
+                        <h3 class="fw-bold text-white">{{ stats.total_users }}</h3>
+                        <p class="text-white mb-0">Active Users</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card p-4 rounded shadow" 
+                         style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; transform: translateY(0); transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 12px 30px rgba(240, 147, 251, 0.4)';"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
+                        <i class="fas fa-th-large fa-3x text-white mb-3"></i>
+                        <h3 class="fw-bold text-white">{{ stats.categories }}</h3>
+                        <p class="text-white mb-0">Categories</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card p-4 rounded shadow" 
+                         style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; transform: translateY(0); transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 12px 30px rgba(79, 172, 254, 0.4)';"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
+                        <i class="fas fa-graduation-cap fa-3x text-white mb-3"></i>
+                        <h3 class="fw-bold text-white">{{ stats.departments }}</h3>
+                        <p class="text-white mb-0">Departments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Books -->
+    <section class="featured-books py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="fw-bold text-dark">Featured Books</h2>
+                <p class="text-dark">Recently added and popular books</p>
+            </div>
+            <div class="row">
+                {% for book in featured_books %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="book-card card h-100 shadow" style="border-radius: 15px; border: none; overflow: hidden; transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 35px rgba(0,0,0,0.2)';"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
+                        <div class="book-cover position-relative">
+                            {% if book.cover_image and book.cover_image != 'default_book.png' %}
+                            <img src="{{ url_for('static', filename='images/books/' + book.cover_image) }}" 
+                                 class="card-img-top" alt="{{ book.title }}">
+                            {% else %}
+                            <div class="card-img-top d-flex align-items-center justify-content-center" 
+                                 style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <i class="fas fa-book fa-4x"></i>
+                            </div>
+                            {% endif %}
+                            {% if book.available_copies > 0 %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">Available</span>
+                            {% else %}
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">Unavailable</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate" title="{{ book.title }}">{{ book.title }}</h6>
+                            <p class="card-text text-muted small text-truncate">{{ book.author }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary">{{ book.category or 'General' }}</span>
+                                <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-outline-primary">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('books.index') }}" class="btn btn-primary btn-lg">
+                    View All Books <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories-section py-5 bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="fw-bold">Browse by Category</h2>
+                <p class="text-muted">Explore books across different genres</p>
+            </div>
+            <div class="row">
+                {% for category in popular_categories %}
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <a href="{{ url_for('books.by_category', category_name=category.name) }}" class="text-decoration-none">
+                        <div class="category-card card shadow h-100" 
+                             style="border-radius: 15px; border: 2px solid transparent; transition: all 0.4s ease; background: white;"
+                             onmouseover="this.style.transform='translateY(-8px)'; this.style.borderColor='#667eea'; this.style.background='linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)'; this.style.boxShadow='0 12px 28px rgba(102, 126, 234, 0.3)';"
+                             onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent'; this.style.background='white'; this.style.boxShadow=''">
+                            <div class="card-body text-center p-4">
+                                <i class="fas {{ category.icon or 'fa-book' }} fa-3x mb-3" style="color: #667eea;"></i>
+                                <h5 class="card-title text-dark fw-bold">{{ category.name }}</h5>
+                                <p class="card-text text-muted small">{{ category.description }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section py-5 text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-3">Ready to Start Learning?</h2>
+            <p class="lead mb-4">Join thousands of students and faculty members accessing our vast collection</p>
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Create Account
+            </a>
+            {% else %}
+            <a href="{{ url_for('user.dashboard') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+            </a>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

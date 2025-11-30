@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}User Details - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">User Details</h2>
+                    <p class="text-muted">Complete information about {{ user.full_name }}</p>
+                </div>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Users
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- User Profile Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-user-circle fa-5x text-primary"></i>
+                            </div>
+                            <h4>{{ user.full_name }}</h4>
+                            <p class="text-muted">{{ user.email }}</p>
+                            <p><code>{{ user.user_id }}</code></p>
+                            
+                            <div class="d-flex justify-content-center gap-2 mb-3">
+                                {% if user.role == 'admin' %}
+                                <span class="badge bg-danger">Admin</span>
+                                {% elif user.role == 'faculty' %}
+                                <span class="badge bg-warning">Faculty</span>
+                                {% else %}
+                                <span class="badge bg-info">Student</span>
+                                {% endif %}
+                                
+                                {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-edit me-2"></i>Edit Profile
+                                </button>
+                                <button class="btn btn-warning btn-sm">
+                                    <i class="fas fa-ban me-2"></i>Suspend Account
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash me-2"></i>Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card -->
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistics</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Books Borrowed:</span>
+                                <strong>{{ user_stats.total_borrowed }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Currently Borrowed:</span>
+                                <strong>{{ user_stats.active_borrowed }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Reservations:</span>
+                                <strong>{{ user_stats.active_reservations }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Fines:</span>
+                                <strong>₹{{ user_stats.total_fines }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Reviews Written:</span>
+                                <strong>{{ user_stats.reviews_count }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Information -->
+                <div class="col-md-8">
+                    <!-- Personal Information -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <strong>Full Name:</strong>
+                                    <p>{{ user.full_name }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Email:</strong>
+                                    <p>{{ user.email }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Phone:</strong>
+                                    <p>{{ user.phone or 'N/A' }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Department:</strong>
+                                    <p>{{ user.department or 'N/A' }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Role:</strong>
+                                    <p>{{ user.role|title }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Member Since:</strong>
+                                    <p>{{ user.created_at.strftime('%B %d, %Y') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Borrowings -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-book me-2"></i>Active Borrowings</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if active_borrowings %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Book</th>
+                                            <th>Borrowed</th>
+                                            <th>Due Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for borrowing in active_borrowings %}
+                                        <tr>
+                                            <td>{{ borrowing.book.title }}</td>
+                                            <td>{{ borrowing.borrow_date.strftime('%Y-%m-%d') }}</td>
+                                            <td>{{ borrowing.due_date.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                {% if borrowing.is_overdue() %}
+                                                <span class="badge bg-danger">Overdue</span>
+                                                {% else %}
+                                                <span class="badge bg-success">Active</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No active borrowings</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if borrowing_history %}
+                            <div class="list-group list-group-flush">
+                                {% for borrowing in borrowing_history %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">{{ borrowing.book.title }}</h6>
+                                            <small class="text-muted">
+                                                Borrowed: {{ borrowing.borrow_date.strftime('%Y-%m-%d') }}
+                                                {% if borrowing.return_date %}
+                                                | Returned: {{ borrowing.return_date.strftime('%Y-%m-%d') }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        {% if borrowing.return_date %}
+                                        <span class="badge bg-secondary">Returned</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No borrowing history</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
